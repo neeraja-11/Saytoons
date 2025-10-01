@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import sqlite3
 
@@ -13,6 +13,16 @@ def get_image(word):
     result = cursor.fetchone()
     conn.close()
     return result[0] if result else None
+
+# Homepage route (renders index.html)
+@app.route('/')
+def welcome():
+    return render_template('welcome.html')
+
+@app.route('/home')
+def home():
+    return render_template('index.html')
+
 
 # API endpoint
 @app.route("/get-image", methods=["POST"])

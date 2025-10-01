@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Saytoons - Welcome</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #ffbd59;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @font-face {
+      font-family: 'Showcard Gothic';
+      src: url('/static/fonts/SHOWG.TTF') format('truetype');
+    }
+
+    h1 {
+      font-family: 'Showcard Gothic', sans-serif;
+      color: white;
+      font-size: 80px;
+      display: flex;
+      gap: 8px;
+      position: relative;
+      z-index: 2; /* Letters on top of Toony */
+    }
+
+    h1 span {
+      opacity: 0;
+      transform: scale(0);
+      animation: burst 0.6s forwards;
+    }
+
+    @keyframes burst {
+      0% { opacity: 0; transform: scale(0); }
+      60% { opacity: 1; transform: scale(1.3); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Delay each letter */
+    h1 span:nth-child(1) { animation-delay: 0.1s; }
+    h1 span:nth-child(2) { animation-delay: 0.3s; }
+    h1 span:nth-child(3) { animation-delay: 0.5s; }
+    h1 span:nth-child(4) { animation-delay: 0.7s; }
+    h1 span:nth-child(5) { animation-delay: 0.9s; }
+    h1 span:nth-child(6) { animation-delay: 1.1s; }
+    h1 span:nth-child(7) { animation-delay: 1.3s; }
+    h1 span:nth-child(8) { animation-delay: 1.5s; }
+
+    /* Toony image */
+    #toony {
+      position: absolute;
+      width: 160px; /* Start small */
+      height: 280px;
+      transform: scale(0);
+      z-index: 1; /* Behind letters */
+      transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+
+    /* Bounce effect */
+    .toony-bounce {
+      transform: scale(1.2);
+      animation: bounce 0.3s forwards;
+        transform: translate(-20px, 10px) scale(1.2);
+    }
+    
+    /* Loading text */
+    #loadingText {
+      position: absolute;
+      bottom: 30px;
+      font-size: 22px;
+      font-weight: bold;
+      color: white;
+      opacity: 0;
+      animation: fadeIn 1s ease-in-out forwards;
+      animation-delay: 2s; /* show after animations */
+    }
+
+    @keyframes bounce {
+      0% { transform: scale(0); }
+      60% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+  </style>
+</head>
+<body>
+  <h1 id="saytoons">
+    <span>S</span>
+    <span>a</span>
+    <span>y</span>
+    <span>t</span>
+    <span>o</span>
+    <span>o</span>
+    <span>n</span>
+    <span>s</span>
+  </h1>
+
+  <!-- Toony image -->
+  <img id="toony" src="/static/images/toony.png" alt="Toony">
+
+   <!-- Loading text -->
+  <div id="loadingText">Loading...</div>
+
+ <script>
+const toony = document.getElementById('toony');
+const letters = document.querySelectorAll('#saytoons span');
+
+// Wait for the last letter animation to finish
+const lastLetterDelay = 1.5; // matches last span animation-delay
+const burstDuration = 0.6;   // duration of burst animation
+const totalDelay = (lastLetterDelay + burstDuration) * 1000;
+
+setTimeout(() => {
+  // Position Toony behind the first 'O'
+  const oLetter = letters[4]; // first 'O'
+  const rect = oLetter.getBoundingClientRect();
+  const parentRect = document.body.getBoundingClientRect();
+
+  // Move Toony slightly up
+  toony.style.left = `${rect.left - parentRect.left }px`;
+  toony.style.top  = `${rect.top - parentRect.top - 130}px`; // nicely above
+
+  // Add bounce effect
+  toony.classList.add('toony-bounce');
+}, totalDelay);
+
+// Redirect to index.html after 0.9s
+// Redirect to Flask route /home after 0.9s
+// Redirect to Flask route /home after animations finish (~3s)
+setTimeout(() => {
+  window.location.href = '/home';
+}, 4000); // wait 4 seconds
+
+
+</script>
+
+</body>
+</html>

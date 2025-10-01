@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SayToons - Test Frontend</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    input, button {
+      font-size: 18px;
+      padding: 10px;
+    }
+    img {
+      margin-top: 20px;
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <h1>SayToons 🎤</h1>
+  <p>Type a word (apple, dog, cat, ball, car)</p>
+
+  <input type="text" id="wordInput" placeholder="Enter a word">
+  <button onclick="getImage()">Show Cartoon</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function getImage() {
+      const word = document.getElementById("wordInput").value;
+
+      // Send request to Flask backend
+      const response = await fetch("http://127.0.0.1:5000/get-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ word: word })
+      });
+
+      const data = await response.json();
+
+      const resultDiv = document.getElementById("result");
+
+      if (data.image_url) {
+        resultDiv.innerHTML = `
+          <h2>${data.word}</h2>
+          <img src="http://127.0.0.1:5000/${data.image_url}" alt="${data.word}">
+        `;
+      } else {
+        resultDiv.innerHTML = `<p style="color:red;">${data.error}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
