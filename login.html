@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login / Signup</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #ff8c00, #ffbd59);
+    }
+
+    .container {
+      background: #fff;
+      width: 350px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      transition: all 0.5s ease;
+    }
+
+    .form {
+      padding: 30px;
+      display: none;
+    }
+
+    .form.active {
+      display: block;
+    }
+
+    .form h2 {
+      text-align: center;
+      color: #ff8c00;
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px;
+      background-color: #ff8c00;
+      color: #fff;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #ffbd59;
+    }
+
+    .toggle-link {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .toggle-link span {
+      color: #ff8c00;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .message {
+      text-align: center;
+      font-size: 14px;
+      margin-top: 10px;
+      color: green;
+    }
+
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Login Form -->
+    <div class="form login-form active">
+      <h2>Login</h2>
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="Enter email" required />
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter password" required />
+      </div>
+      <button class="btn" onclick="login()">Login</button>
+      <div class="toggle-link">Don’t have an account? <span onclick="showSignup()">Sign up</span></div>
+      <p id="loginMsg" class="message"></p>
+    </div>
+
+    <!-- Signup Form -->
+    <div class="form signup-form">
+      <h2>Sign Up</h2>
+      <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" id="signupName" placeholder="Enter name" required />
+      </div>
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="signupEmail" placeholder="Enter email" required />
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="signupPassword" placeholder="Create password" required />
+      </div>
+      <button class="btn" onclick="signup()">Sign Up</button>
+      <div class="toggle-link">Already have an account? <span onclick="showLogin()">Login</span></div>
+      <p id="signupMsg" class="message"></p>
+    </div>
+  </div>
+
+  <script>
+    const loginForm = document.querySelector('.login-form');
+    const signupForm = document.querySelector('.signup-form');
+    const loginMsg = document.getElementById('loginMsg');
+    const signupMsg = document.getElementById('signupMsg');
+
+    function showSignup() {
+      loginForm.classList.remove('active');
+      signupForm.classList.add('active');
+      loginMsg.textContent = '';
+    }
+
+    function showLogin() {
+      signupForm.classList.remove('active');
+      loginForm.classList.add('active');
+      signupMsg.textContent = '';
+    }
+
+    function signup() {
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value.trim();
+
+      if (!name || !email || !password) {
+        signupMsg.textContent = 'All fields are required!';
+        signupMsg.classList.add('error');
+        return;
+      }
+
+      const user = { name, email, password };
+      localStorage.setItem(email, JSON.stringify(user));
+      signupMsg.textContent = 'Registration successful! You can now login.';
+      signupMsg.classList.remove('error');
+      setTimeout(showLogin, 1000);
+    }
+
+    function login() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+
+      if (!email || !password) {
+        loginMsg.textContent = 'Please fill all fields!';
+        loginMsg.classList.add('error');
+        return;
+      }
+
+      const storedUser = localStorage.getItem(email);
+      if (!storedUser) {
+        loginMsg.textContent = 'User not found!';
+        loginMsg.classList.add('error');
+        return;
+      }
+
+      const user = JSON.parse(storedUser);
+      if (user.password === password) {
+        loginMsg.textContent = 'Login successful! Redirecting...';
+        loginMsg.classList.remove('error');
+        setTimeout(() => {
+          window.location.href = 'home.html'; // redirect to your app’s main page
+        }, 1000);
+      } else {
+        loginMsg.textContent = 'Incorrect password!';
+        loginMsg.classList.add('error');
+      }
+    }
+  </script>
+</body>
+</html>
