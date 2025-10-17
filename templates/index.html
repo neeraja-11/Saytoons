@@ -2,54 +2,114 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SayToons - Test Frontend</title>
+  <title>SayToons 🎤</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Comic Sans MS', cursive;
       text-align: center;
-      margin-top: 50px;
+      background-color: #ffbd59;
+      padding-top: 60px;
+    }
+    h1 {
+      font-size: 48px;
+      color: #fff;
     }
     input, button {
-      font-size: 18px;
-      padding: 10px;
+      font-size: 20px;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+    }
+    #recordBtn {
+      background-color: #ff7b00;
+      color: white;
+    }
+    #showBtn {
+      background-color: #fff;
+      color: #333;
     }
     img {
-      margin-top: 20px;
-      width: 200px;
+      margin-top: 30px;
+      width: 250px;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     }
   </style>
 </head>
 <body>
-  <h1>SayToons 🎤</h1>
-  <p>Type a word (apple, dog, cat, ball, car)</p>
+  <h1>SayToons 🎨</h1>
+  <p>Say or type what you want to see!</p>
 
-  <input type="text" id="wordInput" placeholder="Enter a word">
-  <button onclick="getImage()">Show Cartoon</button>
+  <button id="recordBtn">🎤 Start Recording</button>
+  <br><br>
+  <input type="text" id="wordInput" placeholder="Type a word (apple, dog, car)">
+  <button id="showBtn" onclick="getImage()">Show Cartoon</button>
 
+  <h2 id="recognizedText"></h2>
   <div id="result"></div>
 
   <script>
-    async function getImage() {
-      const word = document.getElementById("wordInput").value;
+    const recordBtn = document.getElementById("recordBtn");
+    const recognizedText = document.getElementById("recognizedText");
+    const imageContainer = document.getElementById("result");
 
-      // Send request to Flask backend
-      const response = await fetch("http://127.0.0.1:5000/get-image", {
+    let mediaRecorder;
+    let audioChunks = [];
+
+    // 🎙️ Handle voice recording
+    recordBtn.onclick = async () => {
+      if (!mediaRecorder || mediaRecorder.state === "inactive") {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+        mediaRecorder.onstop = sendAudioToServer;
+        mediaRecorder.start();
+        recordBtn.textContent = "⏹️ Stop Recording";
+      } else {
+        mediaRecorder.stop();
+        recordBtn.textContent = "🎤 Start Recording";
+      }
+    };
+
+    // 🎧 Send recorded audio to Flask backend
+    async function sendAudioToServer() {
+      const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+      const formData = new FormData();
+      formData.append("audio", audioBlob, "speech.wav");
+
+      recognizedText.textContent = "Processing voice... 🎧";
+
+      const response = await fetch("/voice-to-text", { method: "POST", body: formData });
+      const data = await response.json();
+
+      if (data.text) {
+        recognizedText.textContent = `You said: "${data.text}"`;
+        getImage(data.text);
+      } else {
+        recognizedText.textContent = "Couldn't recognize your voice 😢";
+      }
+    }
+
+    // 🖼️ Fetch image from backend
+    async function getImage(wordInput) {
+      const word = wordInput || document.getElementById("wordInput").value;
+
+      const response = await fetch("/get-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ word: word })
+        body: JSON.stringify({ word })
       });
 
       const data = await response.json();
 
-      const resultDiv = document.getElementById("result");
-
       if (data.image_url) {
-        resultDiv.innerHTML = `
-          <h2>${data.word}</h2>
-          <img src="http://127.0.0.1:5000/${data.image_url}" alt="${data.word}">
-        `;
+        imageContainer.innerHTML = `<img src="/${data.image_url}" alt="${word}">`;
       } else {
-        resultDiv.innerHTML = `<p style="color:red;">${data.error}</p>`;
+        imageContainer.innerHTML = `<p style="color:red;">No image found for "${word}"</p>`;
       }
     }
   </script>
