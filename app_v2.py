@@ -8,7 +8,7 @@ app = Flask(__name__)
 CORS(app)
 
 # ======= Set your OpenAI API Key =======
-# Safer way: store key in environment variable
+# Sa way: store key in environment variable
 import os
 openai.api_key = os.getenv("OPENAI_API_KEY")
 # ======= Function to fetch image path from database =======
