@@ -62,12 +62,21 @@
     // 🎙️ Handle voice recording
     recordBtn.onclick = async () => {
       if (!mediaRecorder || mediaRecorder.state === "inactive") {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: { 
+            sampleRate: 16000,
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true
+          } 
+        });
+        mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'audio/webm;codecs=pcm'
+        });
         audioChunks = [];
         mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
         mediaRecorder.onstop = sendAudioToServer;
-        mediaRecorder.start();
+        mediaRecorder.start(1000); // Collect data every second
         recordBtn.textContent = "⏹️ Stop Recording";
       } else {
         mediaRecorder.stop();
@@ -78,12 +87,18 @@
     // 🎧 Send recorded audio to Flask backend
     async function sendAudioToServer() {
       const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-      const formData = new FormData();
-      formData.append("audio", audioBlob, "speech.wav");
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      const audioData = new Int16Array(arrayBuffer);
 
       recognizedText.textContent = "Processing voice... 🎧";
 
-      const response = await fetch("/voice-to-text", { method: "POST", body: formData });
+      const response = await fetch("/voice-to-text", { 
+        method: "POST", 
+        body: audioData,
+        headers: {
+          'Content-Type': 'application/octet-stream'
+        }
+      });
       const data = await response.json();
 
       if (data.text) {
